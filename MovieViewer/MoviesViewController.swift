@@ -120,10 +120,26 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             delegateQueue:NSOperationQueue.mainQueue()
         )
         
+        // Display HUD right before the request is made
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
+        
         let task : NSURLSessionDataTask = session.dataTaskWithRequest(request,
             completionHandler: { (data, response, error) in
                 
+                // Hide HUD once the network request comes back (must be done on main UI thread)
+                MBProgressHUD.hideHUDForView(self.view, animated: true)
+                
                 // ... Use the new data to update the data source ...
+                if let data = data {
+                    if let responseDictionary = try! NSJSONSerialization.JSONObjectWithData(
+                        data, options:[]) as? NSDictionary {
+                            print("response:")
+                            
+                            self.movies = responseDictionary["results"] as! [NSDictionary]
+                            
+                    }
+                }
+                
                 
                 // Reload the tableView now that there is new data
                 self.tableView.reloadData()
